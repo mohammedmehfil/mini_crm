@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MiniCRM</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <i class="fa-solid fa-bolt"></i>
+      <span>MiniCRM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="contacts">
+        <i class="fa-solid fa-address-book"></i><span>Contacts</span>
+      </a>
+      <a href="#" class="nav-item" data-page="deals">
+        <i class="fa-solid fa-handshake"></i><span>Deals</span>
+      </a>
+      <a href="#" class="nav-item" data-page="tasks">
+        <i class="fa-solid fa-list-check"></i><span>Tasks</span>
+      </a>
+      <a href="#" class="nav-item" data-page="activities">
+        <i class="fa-solid fa-timeline"></i><span>Activities</span>
+      </a>
+      <a href="#" class="nav-item" data-page="reports">
+        <i class="fa-solid fa-chart-pie"></i><span>Reports</span>
+      </a>
+      <a href="#" class="nav-item manager-nav" data-page="workrate" id="navWorkRate">
+        <i class="fa-solid fa-chart-line"></i><span>Work Rate</span>
+        <span class="role-badge-pill" id="workRateNavPill">Manager</span>
+      </a>
+      <a href="#" class="nav-item" data-page="settings">
+        <i class="fa-solid fa-gear"></i><span>Settings</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avatar" id="currentUserAvatar">AM</div>
+      <div class="user-info">
+        <span class="user-name" id="currentUserName">Alex Morgan</span>
+        <span class="user-role" id="currentUserRole"><i class="fa-solid fa-crown"></i> Manager</span>
+      </div>
+      <button id="logoutBtn" class="icon-btn danger" title="Sign out / Switch account" style="margin-left:auto;width:30px;height:30px">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-wrapper">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="topbar-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="globalSearch" placeholder="Search contacts, deals…"/>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" id="quickAddBtn">
+          <i class="fa-solid fa-plus"></i> Quick Add
+        </button>
+        <div class="notif-bell" id="notifBell">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </div>
+        <!-- Notification Dropdown -->
+        <div class="notif-dropdown hidden" id="notifDropdown">
+          <div class="notif-dropdown-header">
+            <span>Notifications</span>
+            <button id="clearNotifs" class="btn-link">Clear all</button>
+          </div>
+          <div id="notifList"><p class="empty-state" style="padding:16px">No notifications</p></div>
+        </div>
+        <button class="icon-btn" id="darkModeToggle" title="Toggle dark mode" style="width:34px;height:34px;font-size:16px">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button class="icon-btn" id="exportCsvBtn" title="Export contacts as CSV" style="width:34px;height:34px;font-size:14px">
+          <i class="fa-solid fa-file-csv"></i>
+        </button>
+        <label class="icon-btn" id="importCsvLabel" title="Import contacts from CSV" style="width:34px;height:34px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <i class="fa-solid fa-file-import"></i>
+          <input type="file" id="importCsvInput" accept=".csv" style="display:none"/>
+        </label>
+        <div class="user-pill-topbar" id="topbarUserPill" title="Click to switch account or sign out">
+          <span class="user-avatar-tiny" id="topbarUserAvatar">AM</span>
+          <span class="user-pill-name" id="topbarUserName">Alex</span>
+          <span class="badge-role" id="topbarUserRole">Manager</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="page-content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <section class="page" id="page-dashboard">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <span class="page-subtitle">Welcome back, John 👋</span>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:#e0f2fe;color:#0284c7"><i class="fa-solid fa-users"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Contacts</span>
+              <span class="kpi-value" id="kpiContacts">0</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:#fef9c3;color:#ca8a04"><i class="fa-solid fa-handshake"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Open Deals</span>
+              <span class="kpi-value" id="kpiDeals">0</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:#dcfce7;color:#16a34a"><i class="fa-solid fa-dollar-sign"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Pipeline Value</span>
+              <span class="kpi-value" id="kpiPipeline">$0</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:#fce7f3;color:#db2777"><i class="fa-solid fa-list-check"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Pending Tasks</span>
+              <span class="kpi-value" id="kpiTasks">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity + Pipeline Summary -->
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <span>Recent Contacts</span>
+              <a href="#" data-page="contacts" class="card-link nav-link">View all →</a>
+            </div>
+            <div class="card-body" id="dashRecentContacts">
+              <p class="empty-state">No contacts yet.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span>Deal Pipeline</span>
+              <a href="#" data-page="deals" class="card-link nav-link">View all →</a>
+            </div>
+            <div class="card-body" id="dashPipeline">
+              <div class="pipeline-bar-wrap" id="pipelineBarWrap"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Tasks -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <span>Upcoming Tasks</span>
+            <a href="#" data-page="tasks" class="card-link nav-link">View all →</a>
+          </div>
+          <div class="card-body" id="dashTasks">
+            <p class="empty-state">No tasks yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CONTACTS ===== -->
+      <section class="page hidden" id="page-contacts">
+        <div class="page-header">
+          <h1>Contacts</h1>
+          <button class="btn btn-primary" id="addContactBtn">
+            <i class="fa-solid fa-plus"></i> Add Contact
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <input type="text" id="contactSearch" placeholder="Search contacts…" class="filter-input"/>
+          <select id="contactFilter" class="filter-select">
+            <option value="">All Tags</option>
+            <option value="lead">Lead</option>
+            <option value="customer">Customer</option>
+            <option value="partner">Partner</option>
+            <option value="vip">VIP</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table class="crm-table" id="contactsTable">
+            <thead>
+              <tr>
+                <th class="sortable-th" data-sort="name">Name <i class="fa-solid fa-sort"></i></th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th class="sortable-th" data-sort="company">Company <i class="fa-solid fa-sort"></i></th>
+                <th class="sortable-th" data-sort="tag">Tag <i class="fa-solid fa-sort"></i></th>
+                <th class="sortable-th" data-sort="created">Added <i class="fa-solid fa-sort"></i></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="contactsBody">
+              <tr><td colspan="7" class="empty-state">No contacts found.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== DEALS ===== -->
+      <section class="page hidden" id="page-deals">
+        <div class="page-header">
+          <h1>Deals</h1>
+          <button class="btn btn-primary" id="addDealBtn">
+            <i class="fa-solid fa-plus"></i> Add Deal
+          </button>
+        </div>
+
+        <div class="kanban-board" id="kanbanBoard">
+          <!-- columns rendered by JS -->
+        </div>
+      </section>
+
+      <!-- ===== TASKS ===== -->
+      <section class="page hidden" id="page-tasks">
+        <div class="page-header">
+          <h1>Tasks</h1>
+          <button class="btn btn-primary" id="addTaskBtn">
+            <i class="fa-solid fa-plus"></i> Add Task
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <select id="taskFilter" class="filter-select">
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="done">Completed</option>
+          </select>
+          <select id="taskPriorityFilter" class="filter-select">
+            <option value="">All Priorities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+
+        <div class="task-list" id="taskList">
+          <p class="empty-state">No tasks yet.</p>
+        </div>
+      </section>
+
+      <!-- ===== ACTIVITIES ===== -->
+      <section class="page hidden" id="page-activities">
+        <div class="page-header">
+          <h1>Activity Log</h1>
+        </div>
+        <div class="activity-feed" id="activityFeed">
+          <p class="empty-state">No activity recorded yet.</p>
+        </div>
+      </section>
+
+      <!-- ===== REPORTS ===== -->
+      <section class="page hidden" id="page-reports">
+        <div class="page-header">
+          <div>
+            <h1>Reports &amp; Analytics</h1>
+            <span class="page-subtitle">Live data snapshot</span>
+          </div>
+          <button class="btn btn-ghost" id="printReportBtn" title="Print or save as PDF">
+            <i class="fa-solid fa-print"></i> Print Report
+          </button>
+        </div>
+
+        <!-- Summary Cards Row -->
+        <div class="kpi-grid" id="reportKpis"></div>
+
+        <div class="dash-grid" style="margin-top:0">
+          <!-- Contacts by Tag -->
+          <div class="card">
+            <div class="card-header"><span>Contacts by Tag</span></div>
+            <div class="card-body" id="reportContactTags"></div>
+          </div>
+          <!-- Deals by Stage -->
+          <div class="card">
+            <div class="card-header"><span>Deal Value by Stage</span></div>
+            <div class="card-body" id="reportDealStages"></div>
+          </div>
+        </div>
+
+        <div class="dash-grid mt-4">
+          <!-- Win Rate -->
+          <div class="card">
+            <div class="card-header"><span>Win / Loss Rate</span></div>
+            <div class="card-body" id="reportWinRate"></div>
+          </div>
+          <!-- Task Completion -->
+          <div class="card">
+            <div class="card-header"><span>Task Completion</span></div>
+            <div class="card-body" id="reportTaskCompletion"></div>
+          </div>
+        </div>
+
+        <!-- Top Deals Table -->
+        <div class="card mt-4">
+          <div class="card-header"><span>Top 5 Deals by Value</span></div>
+          <div class="card-body" id="reportTopDeals"></div>
+        </div>
+      </section>
+
+      <!-- ===== SALES EMPLOYEE WORK RATE DASHBOARD (MANAGER) ===== -->
+      <section class="page hidden" id="page-workrate">
+        <div class="page-header" style="flex-wrap:wrap;gap:14px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <h1>Sales Employee Work Rate</h1>
+              <span class="role-badge-pill manager-pill"><i class="fa-solid fa-crown"></i> Manager Portal</span>
+            </div>
+            <span class="page-subtitle">Track sales rep velocity, quota attainment, and task performance in real-time</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <select id="workRateEmpFilter" class="filter-select" style="min-width:180px">
+              <option value="all">👥 All Sales Employees</option>
+            </select>
+            <select id="workRatePeriod" class="filter-select">
+              <option value="month">📅 Current Month</option>
+              <option value="quarter">📅 This Quarter</option>
+              <option value="year">📅 Year to Date</option>
+            </select>
+            <button class="btn btn-primary btn-sm" id="quickAssignDealBtn">
+              <i class="fa-solid fa-plus"></i> Assign Deal
+            </button>
+            <button class="btn btn-ghost btn-sm" id="exportWorkRateReportBtn">
+              <i class="fa-solid fa-download"></i> Export Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Manager Team Summary KPIs -->
+        <div class="kpi-grid" id="teamWorkRateKpis">
+          <!-- Rendered by JS -->
+        </div>
+
+        <!-- Employee Performance Cards Grid -->
+        <div style="margin-top:24px">
+          <div class="section-title-bar">
+            <div>
+              <h2 style="font-size:16px;font-weight:700">Sales Rep Work Rate Cards</h2>
+              <span style="font-size:12px;color:var(--text-muted)">Live productivity score evaluated from deals won, task velocity, and client activities</span>
+            </div>
+            <span class="badge-accent" id="activeRepsCount">4 Sales Employees</span>
+          </div>
+          <div class="employee-workrate-grid" id="employeeWorkRateGrid">
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Detailed Work Rate Comparison Table -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <span>Work Rate &amp; Performance Leaderboard</span>
+            <span style="font-size:12px;color:var(--text-muted)">Sorted by overall Work Rate Score</span>
+          </div>
+          <div class="table-wrap" style="border:none">
+            <table class="crm-table" id="workRateTable">
+              <thead>
+                <tr>
+                  <th style="width:40px">Rank</th>
+                  <th>Sales Rep</th>
+                  <th>Work Rate Score</th>
+                  <th>Revenue Closed</th>
+                  <th>Quota Target</th>
+                  <th>Attainment</th>
+                  <th>Deals Won / Total</th>
+                  <th>Tasks Done</th>
+                  <th>Activities</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="workRateTableBody">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Manager AI Coaching & Performance Insights -->
+        <div class="dash-grid mt-4">
+          <div class="card">
+            <div class="card-header">
+              <span><i class="fa-solid fa-calculator" style="color:var(--primary)"></i> How Work Rate is Evaluated</span>
+            </div>
+            <div class="card-body">
+              <div style="font-size:13px;color:var(--text);line-height:1.7">
+                <p style="margin-bottom:10px">The <strong>Work Rate Index (0–100%)</strong> provides managers an objective, balanced measure of employee sales activity and closing efficiency:</p>
+                <div class="workrate-formula-box">
+                  <div class="formula-item">
+                    <span class="formula-weight">45%</span>
+                    <strong>Deal Quota Attainment</strong>
+                    <span class="formula-desc">Revenue closed vs monthly sales target</span>
+                  </div>
+                  <div class="formula-item">
+                    <span class="formula-weight">35%</span>
+                    <strong>Task Execution Velocity</strong>
+                    <span class="formula-desc">Completed tasks and follow-up punctuality</span>
+                  </div>
+                  <div class="formula-item">
+                    <span class="formula-weight">20%</span>
+                    <strong>Client Engagement Volume</strong>
+                    <span class="formula-desc">Calls, meetings, emails, and logged activities</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span><i class="fa-solid fa-lightbulb" style="color:#d97706"></i> Manager Recommendations</span>
+            </div>
+            <div class="card-body" id="managerInsightsBox">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===== SETTINGS ===== -->
+      <section class="page hidden" id="page-settings">
+        <div class="page-header">
+          <h1>Settings</h1>
+        </div>
+        <div class="settings-grid">
+
+          <!-- Profile Card -->
+          <div class="card settings-card">
+            <div class="card-header"><i class="fa-solid fa-user-circle" style="color:var(--primary)"></i> &nbsp;Profile</div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input type="text" id="settingFirst" placeholder="John"/>
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input type="text" id="settingLast" placeholder="Doe"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Role</label>
+                <input type="text" id="settingRole" placeholder="Admin"/>
+              </div>
+              <button class="btn btn-primary btn-sm" id="saveProfileBtn">Save Profile</button>
+            </div>
+          </div>
+
+          <!-- Appearance Card -->
+          <div class="card settings-card">
+            <div class="card-header"><i class="fa-solid fa-palette" style="color:var(--primary)"></i> &nbsp;Appearance</div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>Theme</label>
+                <div style="display:flex;gap:10px;margin-top:4px">
+                  <button class="theme-btn active" data-theme="light"><i class="fa-solid fa-sun"></i> Light</button>
+                  <button class="theme-btn" data-theme="dark"><i class="fa-solid fa-moon"></i> Dark</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Accent Color</label>
+                <div class="color-swatches" id="colorSwatches">
+                  <div class="swatch active" data-color="#4f46e5" style="background:#4f46e5" title="Indigo"></div>
+                  <div class="swatch" data-color="#0284c7" style="background:#0284c7" title="Blue"></div>
+                  <div class="swatch" data-color="#059669" style="background:#059669" title="Green"></div>
+                  <div class="swatch" data-color="#d97706" style="background:#d97706" title="Amber"></div>
+                  <div class="swatch" data-color="#db2777" style="background:#db2777" title="Pink"></div>
+                  <div class="swatch" data-color="#7c3aed" style="background:#7c3aed" title="Purple"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Card -->
+          <div class="card settings-card">
+            <div class="card-header"><i class="fa-solid fa-database" style="color:var(--primary)"></i> &nbsp;Data Management</div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+              <div class="settings-row">
+                <div>
+                  <div style="font-weight:600;font-size:13px">Export Contacts</div>
+                  <div style="color:var(--text-muted);font-size:12px">Download all contacts as CSV</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" id="settingsExportBtn"><i class="fa-solid fa-download"></i> Export</button>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div style="font-weight:600;font-size:13px">Import Contacts</div>
+                  <div style="color:var(--text-muted);font-size:12px">Upload a CSV file to bulk-add contacts</div>
+                </div>
+                <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+                  <i class="fa-solid fa-upload"></i> Import
+                  <input type="file" id="settingsImportInput" accept=".csv" style="display:none"/>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div style="font-weight:600;font-size:13px">Full Backup (JSON)</div>
+                  <div style="color:var(--text-muted);font-size:12px">Download entire CRM database (deals, contacts, tasks)</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" id="backupJsonBtn"><i class="fa-solid fa-file-shield"></i> Backup</button>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div style="font-weight:600;font-size:13px">Restore Backup (JSON)</div>
+                  <div style="color:var(--text-muted);font-size:12px">Restore data from a JSON backup file</div>
+                </div>
+                <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Restore
+                  <input type="file" id="restoreJsonInput" accept=".json" style="display:none"/>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div style="font-weight:600;font-size:13px">Storage Used</div>
+                  <div style="color:var(--text-muted);font-size:12px" id="storageInfo">Calculating…</div>
+                </div>
+                <div id="storageBar" style="width:80px;height:8px;background:var(--border);border-radius:20px;overflow:hidden">
+                  <div id="storageBarFill" style="height:100%;background:var(--primary);border-radius:20px;width:0%;transition:width .5s"></div>
+                </div>
+              </div>
+              <div class="settings-row" style="padding-top:8px;border-top:1px solid var(--border)">
+                <div>
+                  <div style="font-weight:600;font-size:13px;color:var(--danger)">Reset All Data</div>
+                  <div style="color:var(--text-muted);font-size:12px">Reload demo data and clear everything</div>
+                </div>
+                <button class="btn btn-danger btn-sm" id="settingsResetBtn"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Keyboard Shortcuts Card -->
+          <div class="card settings-card">
+            <div class="card-header"><i class="fa-solid fa-keyboard" style="color:var(--primary)"></i> &nbsp;Keyboard Shortcuts</div>
+            <div class="card-body">
+              <div class="shortcut-list">
+                <div class="shortcut-row"><kbd>Ctrl</kbd>+<kbd>K</kbd><span>Focus search</span></div>
+                <div class="shortcut-row"><kbd>N</kbd><span>New contact</span></div>
+                <div class="shortcut-row"><kbd>D</kbd><span>New deal</span></div>
+                <div class="shortcut-row"><kbd>T</kbd><span>New task</span></div>
+                <div class="shortcut-row"><kbd>1</kbd>–<kbd>7</kbd><span>Switch pages</span></div>
+                <div class="shortcut-row"><kbd>Esc</kbd><span>Close modal / panel</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Contact Modal -->
+  <div class="modal-overlay hidden" id="contactModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="contactModalTitle">Add Contact</h2>
+        <button class="modal-close" data-modal="contactModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="contactForm" class="modal-body">
+        <input type="hidden" id="contactId"/>
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" id="contactFirst" required placeholder="Jane"/>
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input type="text" id="contactLast" required placeholder="Smith"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="contactEmail" required placeholder="jane@example.com"/>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" id="contactPhone" placeholder="+1 555 000 0000"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Company</label>
+            <input type="text" id="contactCompany" placeholder="Acme Corp"/>
+          </div>
+          <div class="form-group">
+            <label>Tag</label>
+            <select id="contactTag">
+              <option value="lead">Lead</option>
+              <option value="customer">Customer</option>
+              <option value="partner">Partner</option>
+              <option value="vip">VIP</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="contactNotes" rows="3" placeholder="Any notes…"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-modal="contactModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveContactBtn">Save Contact</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Deal Modal -->
+  <div class="modal-overlay hidden" id="dealModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="dealModalTitle">Add Deal</h2>
+        <button class="modal-close" data-modal="dealModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="dealForm" class="modal-body">
+        <input type="hidden" id="dealId"/>
+        <div class="form-group">
+          <label>Deal Title *</label>
+          <input type="text" id="dealTitle" required placeholder="Enterprise licence renewal"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Value ($)</label>
+            <input type="number" id="dealValue" min="0" placeholder="5000"/>
+          </div>
+          <div class="form-group">
+            <label>Stage</label>
+            <select id="dealStage">
+              <option value="lead">Lead</option>
+              <option value="qualified">Qualified</option>
+              <option value="proposal">Proposal</option>
+              <option value="negotiation">Negotiation</option>
+              <option value="won">Won</option>
+              <option value="lost">Lost</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Contact</label>
+            <select id="dealContact">
+              <option value="">— None —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Assigned Sales Rep</label>
+            <select id="dealAssignee">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Close Date</label>
+          <input type="date" id="dealClose"/>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="dealNotes" rows="3" placeholder="Deal details…"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-modal="dealModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Deal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Task Modal -->
+  <div class="modal-overlay hidden" id="taskModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="taskModalTitle">Add Task</h2>
+        <button class="modal-close" data-modal="taskModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="taskForm" class="modal-body">
+        <input type="hidden" id="taskId"/>
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="taskTitle" required placeholder="Follow up with client"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="taskDue"/>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="taskPriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Related Contact</label>
+            <select id="taskContact">
+              <option value="">— None —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Assigned Employee</label>
+            <select id="taskAssignee">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="taskNotes" rows="2" placeholder="Task details…"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-modal="taskModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Add Modal -->
+  <div class="modal-overlay hidden" id="quickAddModal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Quick Add</h2>
+        <button class="modal-close" data-modal="quickAddModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body quick-add-grid">
+        <button class="quick-add-item" id="qaContact">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Contact</span>
+        </button>
+        <button class="quick-add-item" id="qaDeal">
+          <i class="fa-solid fa-file-contract"></i>
+          <span>Deal</span>
+        </button>
+        <button class="quick-add-item" id="qaTask">
+          <i class="fa-solid fa-square-plus"></i>
+          <span>Task</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Detail Panel -->
+  <div class="detail-overlay hidden" id="contactDetail">
+    <div class="detail-panel">
+      <button class="detail-close" id="closeDetail"><i class="fa-solid fa-xmark"></i></button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- ===== LOGIN PORTAL MODAL / OVERLAY ===== -->
+  <div class="login-portal-backdrop" id="loginPortal">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-brand">
+          <i class="fa-solid fa-bolt"></i>
+          <span>MiniCRM</span>
+        </div>
+        <h1>Workspace Login</h1>
+        <p class="login-subtitle">Sign in to your CRM operating environment</p>
+      </div>
+
+      <!-- Role Tabs -->
+      <div class="role-selector-tabs">
+        <button type="button" class="role-tab active" data-role="manager" id="roleTabManager">
+          <i class="fa-solid fa-crown"></i>
+          <span>Manager</span>
+        </button>
+        <button type="button" class="role-tab" data-role="employee" id="roleTabEmployee">
+          <i class="fa-solid fa-briefcase"></i>
+          <span>Sales Employee</span>
+        </button>
+      </div>
+
+      <!-- 1-Click Demo Profiles -->
+      <div class="demo-login-box">
+        <div class="demo-login-title"><i class="fa-solid fa-bolt"></i> One-Click Quick Sign In:</div>
+        <div class="demo-accounts-list" id="demoAccountsList">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="login-divider"><span>or sign in manually</span></div>
+
+      <!-- Manual Form -->
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-with-icon">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="loginEmail" required placeholder="alex@crm.com"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-with-icon">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="loginPassword" required placeholder="••••••••"/>
+          </div>
+        </div>
+        <div class="login-options">
+          <label class="remember-label">
+            <input type="checkbox" id="rememberMe" checked/>
+            <span>Keep me signed in</span>
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </button>
+      </form>
+
+      <div class="login-footer-info" id="roleContextHint">
+        👔 <strong>Manager Mode:</strong> Full admin permissions, Employee Work Rate Dashboard, and sales target tracking.
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastContainer"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
